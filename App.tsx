@@ -244,7 +244,7 @@ const AddExpense: React.FC<AddProps> = ({ onSave, onBack }) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setProof(reader.readAsDataURL(file) as any);
+      reader.onloadend = () => setProof(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -255,7 +255,7 @@ const AddExpense: React.FC<AddProps> = ({ onSave, onBack }) => {
       amount: parseFloat(amount),
       person: person.trim(),
       mode,
-      label: label.trim(),
+      label: label.trim() || 'General',
       status,
       proof
     });
@@ -265,12 +265,13 @@ const AddExpense: React.FC<AddProps> = ({ onSave, onBack }) => {
     <div className="flex flex-col h-full bg-white animate-in fade-in slide-in-from-bottom-4 duration-300">
       <header className="px-6 py-8 flex items-center gap-4">
         <button onClick={onBack} className="p-2 -ml-2 text-slate-600 active:scale-90 transition-transform">{ICONS.Back}</button>
-        <h2 className="text-xl font-bold text-slate-900">Add Payment</h2>
+        <h2 className="text-xl font-bold text-slate-900">Record Payment</h2>
       </header>
 
       <div className="flex-1 px-6 space-y-8 overflow-y-auto no-scrollbar pb-10">
+        {/* Amount Input */}
         <div className="space-y-2">
-          <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">Amount</label>
+          <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">How much?</label>
           <div className="flex items-center gap-2 border-b-2 border-slate-100 focus-within:border-blue-500 transition-colors py-2">
             <span className="text-4xl font-light text-slate-300">₹</span>
             <input 
@@ -284,39 +285,68 @@ const AddExpense: React.FC<AddProps> = ({ onSave, onBack }) => {
           </div>
         </div>
 
+        {/* Status Toggle */}
         <div className="space-y-3">
-          <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">Who Paid?</label>
-          <div className="flex bg-[#F8FAFC] p-1.5 rounded-[24px] border border-[#F1F5F9] min-h-[110px]">
+          <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">Transaction Type</label>
+          <div className="flex bg-slate-50 p-1 rounded-2xl border border-slate-100">
             {(['I Paid', 'Split', 'They Paid'] as PaymentStatus[]).map((s) => (
               <button
                 key={s}
                 onClick={() => setStatus(s)}
-                className={`flex-1 flex flex-col items-center justify-center transition-all duration-300 rounded-[18px] ${
+                className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wider rounded-xl transition-all ${
                   status === s 
-                  ? 'bg-white shadow-[0_4px_12px_rgba(0,0,0,0.05)] scale-[1.02] border border-[#E2E8F0]' 
-                  : 'opacity-40 grayscale-[0.5]'
+                  ? 'bg-white shadow-sm text-blue-600 ring-1 ring-slate-200/50' 
+                  : 'text-slate-400'
                 }`}
               >
-                <div className={`w-10 h-10 mb-2 flex items-center justify-center rounded-[10px] ${s === 'I Paid' ? 'bg-[#D1FAE5]' : s === 'Split' ? 'bg-[#DBEAFE]' : 'bg-[#FEE2E2]'}`}>
-                  <span className="text-xl">{s === 'I Paid' ? '✅' : s === 'Split' ? '↔️' : '❌'}</span>
-                </div>
-                <span className={`text-[10px] font-black uppercase tracking-widest ${status === s ? (s === 'I Paid' ? 'text-[#059669]' : s === 'Split' ? 'text-[#2563EB]' : 'text-[#DC2626]') : 'text-slate-500'}`}>{s}</span>
+                {s}
               </button>
             ))}
           </div>
         </div>
 
+        {/* Person Input */}
         <div className="space-y-2">
-          <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">Person</label>
+          <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">With whom?</label>
           <input 
             type="text" 
-            placeholder="Name or Contact" 
+            placeholder="Name (e.g. Rohit)" 
             className="w-full text-xl font-medium py-3 border-b border-slate-100 outline-none focus:border-blue-500 transition-colors bg-transparent"
             value={person}
             onChange={(e) => setPerson(e.target.value)}
           />
         </div>
 
+        {/* Purpose / Label Section */}
+        <div className="space-y-3">
+          <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">What was it for?</label>
+          <div className="flex flex-wrap gap-2">
+            {SMART_LABELS.map(l => (
+              <button 
+                key={l}
+                onClick={() => setLabel(l === label ? '' : l)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  label === l 
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
+                  : 'bg-slate-100 text-slate-600 active:bg-slate-200'
+                }`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+          <div className="relative mt-2">
+            <input 
+              type="text" 
+              placeholder="Or type other reason..." 
+              className="w-full text-base font-medium py-3 border-b border-slate-100 outline-none focus:border-blue-500 transition-colors bg-transparent"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Payment Mode */}
         <div className="space-y-4">
           <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">Mode</label>
           <div className="flex gap-3">
@@ -324,7 +354,11 @@ const AddExpense: React.FC<AddProps> = ({ onSave, onBack }) => {
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 transition-all font-semibold ${mode === m ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-slate-100 text-slate-400'}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 transition-all font-semibold ${
+                  mode === m 
+                  ? 'border-blue-600 bg-blue-50 text-blue-600' 
+                  : 'border-slate-100 text-slate-400'
+                }`}
               >
                 {ICONS[m]} {m}
               </button>
@@ -332,28 +366,7 @@ const AddExpense: React.FC<AddProps> = ({ onSave, onBack }) => {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">Label (Optional)</label>
-          <input 
-            type="text" 
-            placeholder="What was this for?" 
-            className="w-full text-lg font-medium py-3 border-b border-slate-100 outline-none focus:border-blue-500 transition-colors bg-transparent"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-          />
-          <div className="flex flex-wrap gap-2">
-            {SMART_LABELS.map(l => (
-              <button 
-                key={l}
-                onClick={() => setLabel(l === label ? '' : l)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${label === l ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-100 text-slate-500 active:bg-slate-200'}`}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
-        </div>
-
+        {/* Proof of Payment */}
         <div className="space-y-4">
           <div className="flex justify-between items-end">
             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">Proof of Payment</label>
@@ -418,11 +431,11 @@ const AddExpense: React.FC<AddProps> = ({ onSave, onBack }) => {
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-6 bg-white/80 backdrop-blur-md border-t border-slate-50">
         <button 
           onClick={handleSave}
           disabled={!amount || !person}
-          className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-all disabled:opacity-20 disabled:scale-100"
+          className="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-blue-100 active:scale-95 transition-all disabled:opacity-20 disabled:scale-100"
         >
           Save Memory
         </button>
@@ -449,7 +462,7 @@ const PersonDetail: React.FC<DetailProps> = ({ name, expenses, onBack, formatTim
 
   const shareHistory = () => {
     const text = expenses.map(e => `${formatTime(e.timestamp)}: ₹${e.amount} - ${e.label || 'Misc'}`).join('\n');
-    const header = `Memory with ${name}:\nTotal Balance: ₹${Math.abs(balance)}\n\n`;
+    const header = `Memory with ${name}:\nTotal Balance: ₹${Math.abs(balance).toFixed(0)}\n\n`;
     if (navigator.share) navigator.share({ title: `Split with ${name}`, text: header + text }).catch(() => {});
     else { navigator.clipboard.writeText(header + text); alert("Summary copied!"); }
   };

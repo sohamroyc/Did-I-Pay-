@@ -19,4 +19,4 @@ export const ICONS = {
   )
 };
 
-export const SMART_LABELS = ['Chai', 'Auto', 'Cab', 'Food', 'Sutta', 'Other'];
+export const SMART_LABELS = ['Chai ☕', 'Auto 🛺', 'Cab 🚕', 'Food 🍔', 'Sutta 🚬', 'Beer 🍺'];
