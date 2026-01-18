@@ -1,5 +1,7 @@
 {
   "name": "Did I Pay?",
   "description": "A micro-expense memory app for everyday payments like chai, cabs, and splits. Faster than opening a UPI app.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "camera"
+  ]
 }
